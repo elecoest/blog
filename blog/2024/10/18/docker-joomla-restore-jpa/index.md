@@ -81,6 +81,22 @@ services:
     networks:
       - joomla_network
 
+  phpmya:
+    image: phpmyadmin
+    restart: always
+    container_name: ${CONTAINER_PREFIX:-phpmyadmin}-pma
+    depends_on:
+      joomladb:
+        condition: service_healthy
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: joomladb
+      UPLOAD_LIMIT: 20M
+    ports:
+      - 8899:80
+    networks:
+      - joomla_network
+
   joomladb:
     image: mysql:${MYSQL_VERSION:-latest}
     container_name: ${CONTAINER_PREFIX:-joomla}-db
@@ -90,8 +106,8 @@ services:
     environment:
       - MYSQL_DATABASE=${DB_NAME:-joomla}
       - MYSQL_PASSWORD=${DB_PASSWORD:-examplepass}
-      - MYSQL_RANDOM_ROOT_PASSWORD='1'
       - MYSQL_USER=${DB_USER:-joomla}
+      - MYSQL_ROOT_PASSWORD=notSecureChangeMe
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
